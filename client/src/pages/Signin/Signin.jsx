@@ -18,7 +18,9 @@ const Signin = () => {
     e.preventDefault();
     dispatch(loginStart());
     try {
-      const res = await axios.post("/auth/signin", { username, password });
+      const res = await axios.post("http://localhost:8000/api/auth/signin", { username, password }, {
+        withCredentials: true,
+      });
       dispatch(loginSuccess(res.data));
       navigate("/");
     } catch (err) {
@@ -31,10 +33,12 @@ const Signin = () => {
     dispatch(loginStart());
 
     try {
-      const res = await axios.post("/auth/signup", {
+      const res = await axios.post("http://localhost:8000/api/auth/signup", {
         username,
         email,
         password,
+      }, {
+        withCredentials: true,
       });
       dispatch(loginSuccess(res.data));
       navigate("/");

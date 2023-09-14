@@ -7,6 +7,8 @@ import userRoutes from "./routes/users.js";
 import authRoutes from "./routes/auths.js";
 import tweetRoutes from "./routes/tweets.js";
 
+import cors from 'cors';
+
 const app = express();
 dotenv.config();
 
@@ -21,7 +23,13 @@ const connect = () => {
       throw err;
     });
 };
+var corsOptions = {
+  origin: 'http://localhost:3000',
+  credentials: true,
+  optionsSuccessStatus: 200 // For legacy browser support
+}
 
+app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json());
 app.use("/api/users", userRoutes);

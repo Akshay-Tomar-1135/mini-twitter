@@ -5,14 +5,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { changeProfile, logout } from "../../redux/userSlice";
 import { useNavigate } from "react-router-dom";
 
-import {
-  getStorage,
-  ref,
-  uploadBytesResumable,
-  getDownloadURL,
-} from "firebase/storage";
+// import {
+//   getStorage,
+//   ref,
+//   uploadBytesResumable,
+//   getDownloadURL,
+// } from "firebase/storage";
 
-import app from "../../firebase";
+// import app from "../../firebase";
 
 const EditProfile = ({ setOpen }) => {
   const { currentUser } = useSelector((state) => state.user);
@@ -23,51 +23,51 @@ const EditProfile = ({ setOpen }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const uploadImg = (file) => {
-    const storage = getStorage(app);
-    const fileName = new Date().getTime() + file.name;
-    const storageRef = ref(storage, fileName);
-    const uploadTask = uploadBytesResumable(storageRef, file);
+  // const uploadImg = (file) => {
+  //   const storage = getStorage(app);
+  //   const fileName = new Date().getTime() + file.name;
+  //   const storageRef = ref(storage, fileName);
+  //   const uploadTask = uploadBytesResumable(storageRef, file);
 
-    // Listen for state changes, errors, and completion of the upload.
-    uploadTask.on(
-      "state_changed",
-      (snapshot) => {
-        // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
-        const progress =
-          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        setImgUploadProgress(Math.round(progress));
-        switch (snapshot.state) {
-          case "paused":
-            console.log("Upload is paused");
-            break;
-          case "running":
-            console.log("Upload is running");
-            break;
-          default:
-            break;
-        }
-      },
-      (error) => {},
-      () => {
-        // Upload completed successfully, now we can get the download URL
-        getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
-          try {
-            const updateProfile = await axios.put(`/users/${currentUser._id}`, {
-              profilePicture: downloadURL,
-            });
+  //   // Listen for state changes, errors, and completion of the upload.
+  //   uploadTask.on(
+  //     "state_changed",
+  //     (snapshot) => {
+  //       // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+  //       const progress =
+  //         (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+  //       setImgUploadProgress(Math.round(progress));
+  //       switch (snapshot.state) {
+  //         case "paused":
+  //           console.log("Upload is paused");
+  //           break;
+  //         case "running":
+  //           console.log("Upload is running");
+  //           break;
+  //         default:
+  //           break;
+  //       }
+  //     },
+  //     (error) => {},
+  //     () => {
+  //       // Upload completed successfully, now we can get the download URL
+  //       getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
+  //         try {
+  //           const updateProfile = await axios.put(`/users/${currentUser._id}`, {
+  //             profilePicture: downloadURL,
+  //           });
 
-            console.log(updateProfile);
-          } catch (error) {
-            console.log(error);
-          }
+  //           console.log(updateProfile);
+  //         } catch (error) {
+  //           console.log(error);
+  //         }
 
-          console.log("downloaded " + downloadURL);
-          dispatch(changeProfile(downloadURL));
-        });
-      }
-    );
-  };
+  //         console.log("downloaded " + downloadURL);
+  //         dispatch(changeProfile(downloadURL));
+  //       });
+  //     }
+  //   );
+  // };
 
   const handleDelete = async () => {
     const deleteProfile = await axios.delete(`/users/${currentUser._id}`);
@@ -76,7 +76,7 @@ const EditProfile = ({ setOpen }) => {
   };
 
   useEffect(() => {
-    img && uploadImg(img);
+    // img && uploadImg(img);
   }, [img]);
 
   return (
