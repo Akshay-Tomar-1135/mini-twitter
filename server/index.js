@@ -24,7 +24,7 @@ const connect = () => {
     });
 };
 var corsOptions = {
-  origin: 'http://localhost:3000',
+  origin: 'https://twitter-clone-1135.netlify.app',
   credentials: true,
   optionsSuccessStatus: 200 // For legacy browser support
 }
