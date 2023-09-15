@@ -8,8 +8,11 @@ import {
   getUserTweets,
   getExploreTweets,
 } from "../controllers/tweet.js";
+import multer from "multer";
 
 const router = express.Router();
+
+const upload = multer({storage: multer.memoryStorage()});
 
 // Create a Tweet
 router.post("/", verifyToken, createTweet);

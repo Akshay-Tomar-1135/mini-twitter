@@ -10,7 +10,7 @@ import Error from "./pages/Error/Error";
 
 const Layout = () => {
   return (
-    <div className="md:w-8/12 mx-auto">
+    <div className="md:w-10/12 mx-auto">
       <Navbar />
       <Outlet></Outlet>
     </div>

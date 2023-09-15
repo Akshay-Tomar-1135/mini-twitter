@@ -15,6 +15,14 @@ const TweetSchema = new mongoose.Schema(
       type: Array,
       defaultValue: [],
     },
+    imageUrl:{
+      type:String,
+      default:''
+    },
+    videoUrl:{
+      type:String,
+      default:'',
+    }
   },
   { timestamps: true }
 );

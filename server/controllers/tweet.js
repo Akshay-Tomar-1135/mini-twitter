@@ -3,8 +3,15 @@ import { handleError } from "../error.js";
 import User from "../models/User.js";
 
 export const createTweet = async (req, res, next) => {
-  const newTweet = new Tweet(req.body);
+  console.log(req.body);
+  const newTweet = new Tweet({
+    userId: req.body.userId,
+    description: req.body.description || '',
+    imageUrl: req.body.type==='image'?req.body.url:'',
+    videoUrl: req.body.type==='video'?req.body.url:''
+  });
   try {
+    // return res.status(200).json({msg:'hi'});
     const savedTweet = await newTweet.save();
     res.status(200).json(savedTweet);
   } catch (err) {

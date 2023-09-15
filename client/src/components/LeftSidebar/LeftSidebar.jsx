@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect }  from "react";
 import { Link } from "react-router-dom";
 
 import HomeIcon from "@mui/icons-material/Home";
@@ -10,15 +10,31 @@ import { logout } from "../../redux/userSlice";
 
 const LeftSidebar = () => {
   const { currentUser } = useSelector((state) => state.user);
-
+  const [image, setImage] = useState('');
   const dispatch = useDispatch();
 
   const handleLogout = () => {
     dispatch(logout());
   };
 
+  useEffect(()=>{
+    if(currentUser !== null && currentUser.profilePicture.data !==null){
+      // console.log(userProfile);
+      const blob = new Blob([Int8Array.from(currentUser.profilePicture.data.data)], {type: currentUser.profilePicture.contentType });
+      setImage(window.URL.createObjectURL(blob));
+    }
+  }, [currentUser]);
+
+  function getFirstCharacterUpperCase(inputString) {
+    if (typeof inputString === "string" && inputString.length > 0) {
+      return inputString.charAt(0).toUpperCase();
+    } else {
+      return "";
+    }
+  }
+
   return (
-    <div className="flex flex-col h-full md:h-[90vh] justify-between mr-6">
+    <div className="flex flex-col h-full md:h-[80vh] justify-between mr-6">
       <div className="mt-6 flex flex-col space-y-4">
         <Link to="/">
           <div className="flex items-center space-x-6 px-2 py-2 hover:bg-slate-200 rounded-full cursor-pointer">
@@ -40,9 +56,25 @@ const LeftSidebar = () => {
         </Link>
       </div>
       <div className="flex justify-between">
-        <div>
-          <p className="font-bold">{currentUser.username}</p>
-          <p className="font-bold">@{currentUser.username}</p>
+        <div className="flex space-x-2">
+          <div className="flex items-center">
+            {image !== '' ?(
+              <img
+                src={image}
+                alt="Profile Picture"
+                className="w-12 h-12 rounded-full mr-0 border-2 border-slate-800 border-solid"
+                style={{objectFit:'cover'}} 
+              />
+            ):(
+              <div className="w-12 h-12 bg-blue-500 border-2 border-slate-800 border-solid rounded-full flex items-center justify-center text-white font-bold text-lg mr-0" style={{fontSize:'10px'}}>
+                {getFirstCharacterUpperCase(currentUser.username)}
+              </div>
+            )}
+          </div>
+          <div>
+            <p className="font-bold">{currentUser.username}</p>
+            <p className="font-bold">@{currentUser.username}</p>
+          </div>
         </div>
         <div>
           <Link to="signin">

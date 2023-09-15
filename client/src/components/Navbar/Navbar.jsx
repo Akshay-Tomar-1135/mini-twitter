@@ -1,13 +1,15 @@
 import React, { useState } from "react";
 import StarBorderPurple500Icon from "@mui/icons-material/StarBorderPurple500";
 import SearchIcon from "@mui/icons-material/Search";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import UserPlaceholder from "../UserPlaceholder/UserPlaceholder";
 
 const Navbar = () => {
   const [userData, setUserData] = useState(null);
   const location = useLocation().pathname;
+  const navigate = useNavigate();
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 my-5 justify-center">
@@ -24,7 +26,15 @@ const Navbar = () => {
         <div className="flex justify-between items-center">
           <h2 className="font-bold text-2xl">
             {location.includes("profile") ? (
+            <div className="inline-flex items-center">
+            {/* <div> */}
+              <ArrowBackIcon fontSize="large"
+                className="flex items-center mr-2 text-lg px-2 py-2 hover:bg-slate-200 rounded-full cursor-pointer"
+                onClick={()=>navigate(-1)}
+              />
+            {/* </div> */}
               <UserPlaceholder setUserData={setUserData} userData={userData} />
+              </div>
             ) : location.includes("explore") ? (
               "Explore"
             ) : (

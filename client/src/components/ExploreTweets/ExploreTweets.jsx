@@ -20,15 +20,17 @@ const ExploreTweets = () => {
     fetchData();
   }, [currentUser._id]);
   return (
-    <div className="mt-6">
+    <div className="overflow-y-auto max-h-[calc(100vh-120px)] scrollbar-hidden">
+      <div className="mt-6 divide-y divide-gray-300 divide-dashed hover:divide-solid">
       {explore &&
         explore.map((tweet) => {
           return (
-            <div key={tweet._id} className="p-2">
+            <div key={tweet._id} className="pt-2 pb-2 pr-2">
               <Tweet tweet={tweet} setData={setExplore} />
             </div>
           );
         })}
+      </div>
     </div>
   );
 };

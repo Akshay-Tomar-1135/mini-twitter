@@ -23,51 +23,31 @@ const EditProfile = ({ setOpen }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // const uploadImg = (file) => {
-  //   const storage = getStorage(app);
-  //   const fileName = new Date().getTime() + file.name;
-  //   const storageRef = ref(storage, fileName);
-  //   const uploadTask = uploadBytesResumable(storageRef, file);
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setImg(file);
+    }
+  };
 
-  //   // Listen for state changes, errors, and completion of the upload.
-  //   uploadTask.on(
-  //     "state_changed",
-  //     (snapshot) => {
-  //       // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
-  //       const progress =
-  //         (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-  //       setImgUploadProgress(Math.round(progress));
-  //       switch (snapshot.state) {
-  //         case "paused":
-  //           console.log("Upload is paused");
-  //           break;
-  //         case "running":
-  //           console.log("Upload is running");
-  //           break;
-  //         default:
-  //           break;
-  //       }
-  //     },
-  //     (error) => {},
-  //     () => {
-  //       // Upload completed successfully, now we can get the download URL
-  //       getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
-  //         try {
-  //           const updateProfile = await axios.put(`/users/${currentUser._id}`, {
-  //             profilePicture: downloadURL,
-  //           });
+  const handleImageSubmit = async (event) => {
+    event.preventDefault();
+    
+    if (!img) {
+      return;
+    }
 
-  //           console.log(updateProfile);
-  //         } catch (error) {
-  //           console.log(error);
-  //         }
+    const formData = new FormData();
+    formData.append("imageData", img);
 
-  //         console.log("downloaded " + downloadURL);
-  //         dispatch(changeProfile(downloadURL));
-  //       });
-  //     }
-  //   );
-  // };
+    try {
+      const response = await axios.post(`http://localhost:8000/api/image/upload//userpic/${currentUser._id}`, formData);
+      changeProfile(response.data.imageData);
+      console.log(response.data.message);
+    } catch (error) {
+      console.error("Error uploading image:", error);
+    }
+  };
 
   const handleDelete = async () => {
     const deleteProfile = await axios.delete(`/users/${currentUser._id}`);
@@ -75,31 +55,28 @@ const EditProfile = ({ setOpen }) => {
     navigate("/signin");
   };
 
-  useEffect(() => {
-    // img && uploadImg(img);
-  }, [img]);
-
   return (
-    <div className="absolute w-full h-full top-0 left-0 bg-transparent flex items-center justify-center">
-      <div className="w-[600px] h-[600px] bg-slate-200 rounded-lg p-8 flex flex-col gap-4 relative">
+    <div className="absolute w-full h-full top-0 left-0 bg-slate-200 bg-opacity-50 flex items-center justify-center">
+      <div className="w-[600px] h-[500px] bg-white rounded-lg border-2 border-gray-400 p-8 flex flex-col gap-4 relative">
         <button
           onClick={() => setOpen(false)}
-          className="absolute top-3 right-3 cursor-pointer"
+          className="absolute top-3 right-3 flex items-center mr-2 text-lg px-3 py-2 hover:bg-gray-200 rounded-full cursor-pointer"
         >
-          X
+          ✖
         </button>
         <h2 className="font-bold text-xl">Edit Profile</h2>
-        <p>Choose a new profile picture</p>
-        {imgUploadProgress > 0 ? (
-          "Uploading " + imgUploadProgress + "%"
-        ) : (
-          <input
-            type="file"
-            className="bg-transparent border border-slate-500 rounded p-2"
-            accept="image/*"
-            onChange={(e) => setImg(e.target.files[0])}
-          />
-        )}
+        <hr />
+          <form onSubmit={handleImageSubmit}>
+            <label className="block mb-2">Choose a new profile picture</label>
+            <input
+              type="file"
+              className="bg-transparent border border-slate-500 rounded p-2"
+              accept="image/*"
+              onChange={handleImageChange}
+              required
+              />
+            <button type='submit' className="ml-3 px-4 py-1 text-base text-blue-600 font-semibold rounded-full border border-blue-200 hover:text-white hover:bg-blue-600 hover:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2">Upload</button>
+          </form>
 
         <p>Delete Account</p>
         <button

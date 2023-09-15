@@ -27,11 +27,11 @@ const TimelineTweet = () => {
 
   console.log("Timeline", timeLine);
   return (
-    <div className="mt-6">
+    <div className="mt-6 divide-y divide-gray-300 divide-dashed hover:divide-solid" >
       {timeLine &&
         timeLine.map((tweet) => {
           return (
-            <div key={tweet._id} className="p-2">
+            <div key={tweet._id} className="pt-2 pb-2 pr-2">
               <Tweet tweet={tweet} setData={setTimeLine} />
             </div>
           );
