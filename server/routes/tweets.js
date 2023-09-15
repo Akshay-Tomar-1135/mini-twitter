@@ -3,6 +3,7 @@ import { verifyToken } from "../verifyToken.js";
 import {
   createTweet,
   deleteTweet,
+  editTweet,
   likeOrDislike,
   getAllTweets,
   getUserTweets,
@@ -19,6 +20,9 @@ router.post("/", verifyToken, createTweet);
 
 // Delete a Tweet
 router.delete("/:id", verifyToken, deleteTweet);
+
+// Edit a Tweet
+router.put("/:id", verifyToken, editTweet);
 
 // Like or Dislike a Tweet
 router.put("/:id/like", likeOrDislike);

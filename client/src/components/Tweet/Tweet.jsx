@@ -1,4 +1,10 @@
 import axios from "axios";
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL
+} from "firebase/storage";
+import { storage } from "../../firebase";
 import React, { useState } from "react";
 import formatDistance from "date-fns/formatDistance";
 
@@ -8,22 +14,141 @@ import { useSelector } from "react-redux";
 
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import FavoriteIcon from "@mui/icons-material/Favorite";
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import PermMediaSharpIcon from '@mui/icons-material/PermMediaSharp';
 
 const Tweet = ({ tweet, setData }) => {
   const { currentUser } = useSelector((state) => state.user);
-
+  // console.log(tweet);
   const [userData, setUserData] = useState(null);
 
   const dateStr = formatDistance(new Date(tweet.createdAt), new Date());
   const location = useLocation().pathname;
   const { id } = useParams();
-  const [image, setImage] = useState('');
+  const [profileImage, setprofileImage] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+  const [tweetText, setTweetText] = useState(tweet.description);
+  const [image, setImage] = useState(null);
+  const [video, setVideo] = useState(null);
+  const [fileURL, setFileURL] = useState('');
+  const [fileType, setFileType] = useState('');
+  const [msg, setmsg] = useState('');
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedVideo, setSelectedVideo] = useState(null);
+
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  const toggleEdit = ()=>{
+    toggleDropdown();
+    setIsEdit(!isEdit);
+  }
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (file.type.startsWith('image/')) {
+          setSelectedImage(reader.result);
+          setImage(file);
+          setFileType('image');
+          // setmsg(file.name);
+          setVideo(null);
+          setSelectedVideo(null);
+        } else if (file.type.startsWith('video/')) {
+          setSelectedVideo(reader.result);
+          setVideo(file);
+          setFileType('video');
+          // setmsg(file.name);
+          setImage(null);
+          setSelectedImage(null);
+        } else {
+          setmsg('unsupported file type');
+          event.target = null;
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  useEffect(()=>{
+    const handle = async ()=>{
+      const submitTweet = await axios.post("/tweets", {
+        userId: currentUser._id,
+        description: tweetText,
+        url: fileURL,
+        type: fileType,
+      }, {
+        withCredentials: true,
+      });
+      // console.log('after file url', fileURL);
+      // window.location.reload(false);
+    }
+    if((fileType!=='' && fileURL!=='') || fileType===''){
+      // console.log('file url', fileURL);
+      handle();
+    }
+  }, [fileURL]);
+
+  const uploadFile = async () => {
+    if (!fileType) return;
+    const fileRef = ref(storage, `${fileType}/${currentUser._id + new Date().toString()}`);
+    await uploadBytes(fileRef, fileType=='image'?image:video).then((snapshot) => {
+      getDownloadURL(snapshot.ref).then((url) => {
+        console.log('image uploaded, url: ', url);
+        setFileURL(url);
+      });
+    });
+  };
+
+  const handleEdit = async (e) => {
+    e.preventDefault();
+    if(!tweetText && !image && !video){
+      console.log('nothing selected');
+      return;
+    } 
+    try {
+      await uploadFile();
+      if(fileType===''){
+        // console.log('file url',fileURL);
+        const submitTweet = await axios.post("https://twitter-backend-jd7u.onrender.com/api/tweets", {
+          userId: currentUser._id,
+          description: tweetText,
+          url: fileURL,
+          type: fileType,
+        }, {
+          withCredentials: true,
+        });
+        // console.log('after file url', fileURL);
+        // window.location.reload(false);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const handleDelete = async () => {
+    // Implement your delete logic here
+    try{
+      const response = await axios.delete(`https://twitter-backend-jd7u.onrender.com/api/tweets/${tweet._id}`, {
+        withCredentials:true
+      });
+      // window.location.reload(false)
+    } catch(err){
+      console.log(err);
+    }
+    // Close the dropdown if needed: setIsDropdownOpen(false);
+  };
 
   // console.log(location);
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const findUser = await axios.get(`http://localhost:8000/api/users/find/${tweet.userId}`);
+        const findUser = await axios.get(`https://twitter-backend-jd7u.onrender.com/api/users/find/${tweet.userId}`);
 
         setUserData(findUser.data);
       } catch (err) {
@@ -38,7 +163,7 @@ const Tweet = ({ tweet, setData }) => {
     if(userData !== null && userData.profilePicture.data !==null){
       // console.log(userProfile);
       const blob = new Blob([Int8Array.from(userData.profilePicture.data.data)], {type: userData.profilePicture.contentType });
-      setImage(window.URL.createObjectURL(blob));
+      setprofileImage(window.URL.createObjectURL(blob));
     }
   }, [userData]);
 
@@ -46,18 +171,18 @@ const Tweet = ({ tweet, setData }) => {
     e.preventDefault();
 
     try {
-      const like = await axios.put(`http://localhost:8000/api/tweets/${tweet._id}/like`, {
+      const like = await axios.put(`https://twitter-backend-jd7u.onrender.com/api/tweets/${tweet._id}/like`, {
         id: currentUser._id,
       });
 
       if (location.includes("profile")) {
-        const newData = await axios.get(`http://localhost:8000/api/tweets/user/all/${id}`);
+        const newData = await axios.get(`https://twitter-backend-jd7u.onrender.com/api/tweets/user/all/${id}`);
         setData(newData.data);
       } else if (location.includes("explore")) {
-        const newData = await axios.get(`http://localhost:8000/api/tweets/explore`);
+        const newData = await axios.get(`https://twitter-backend-jd7u.onrender.com/api/tweets/explore`);
         setData(newData.data);
       } else {
-        const newData = await axios.get(`http://localhost:8000/api/tweets/timeline/${currentUser._id}`);
+        const newData = await axios.get(`https://twitter-backend-jd7u.onrender.com/api/tweets/timeline/${currentUser._id}`);
         setData(newData.data);
       }
     } catch (err) {
@@ -73,33 +198,67 @@ const Tweet = ({ tweet, setData }) => {
     }
   }
 
-  return (
+  return (<>
     <div className='p-3 hover:bg-gray-100'>
       {/* <hr className="mb-2"></hr> */}
       {userData && (
         <>
-          <div className="flex space-x-2">
-            {/* <img src="" alt="" /> */}
-            <div className="flex items-center">
-              {image !== '' ?(
-                <img
-                  src={image}
-                  alt="Profile Picture"
-                  className="w-8 h-8 rounded-full mr-0 border-2 border-slate-800 border-solid"
-                  style={{objectFit:'cover'}}
-                />
-              ):(
-                <div className="w-8 h-8 bg-blue-500 border-2 border-slate-800 border-solid rounded-full flex items-center justify-center text-white font-bold text-lg mr-0" style={{fontSize:'15px'}}>
-                  {getFirstCharacterUpperCase(userData.username)}
+          <div className="flex justify-between">
+            <div className="flex space-x-2">
+              {/* <img src="" alt="" /> */}
+              <div className="flex items-center">
+                {profileImage !== '' ?(
+                  <img
+                    src={profileImage}
+                    alt="Profile Picture"
+                    className="w-8 h-8 rounded-full mr-0 border-2 border-slate-800 border-solid"
+                    style={{objectFit:'cover'}}
+                  />
+                ):(
+                  <div className="w-8 h-8 bg-blue-500 border-2 border-slate-800 border-solid rounded-full flex items-center justify-center text-white font-bold text-lg mr-0" style={{fontSize:'15px'}}>
+                    {getFirstCharacterUpperCase(userData.username)}
+                  </div>
+                )}
+              </div>
+              <Link to={`/profile/${userData._id}`}>
+                <h3 className="font-bold">{userData.username}</h3>
+              </Link>
+
+              <span className="font-normal">@{userData.username}</span>
+              <p> • {dateStr}</p>
+            </div>
+            <div className="relative inline-block text-left">
+              {userData._id===currentUser._id && (<div>
+                <button
+                  onClick={toggleDropdown}
+                  type="button"
+                  className="inline-flex justify-center align-center w-8 h-8 pt-1 rounded-full hover:bg-gray-200 focus:outline-none focus:bg-gray-200 transition"
+                  id="options-menu-button"
+                  aria-expanded="true"
+                  aria-haspopup="true"
+                >
+                  <MoreHorizIcon />
+                </button>
+              </div>)}
+
+              {isDropdownOpen && (
+                <div
+                  className="origin-top-right absolute right-0 mt-2 w-32 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+                  role="menu"
+                  aria-orientation="vertical"
+                  aria-labelledby="options-menu-button"
+                >
+                  <div className="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu-button">
+                    <button onClick={toggleEdit} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left" role="menuitem">
+                      Edit
+                    </button>
+                    <button onClick={handleDelete} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left" role="menuitem">
+                      Delete
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
-            <Link to={`/profile/${userData._id}`}>
-              <h3 className="font-bold">{userData.username}</h3>
-            </Link>
-
-            <span className="font-normal">@{userData.username}</span>
-            <p> • {dateStr}</p>
           </div>
 
           <p>{tweet.description}</p>
@@ -127,6 +286,57 @@ const Tweet = ({ tweet, setData }) => {
         </>
       )}
     </div>
+    {isEdit && (
+      <div className="absolute w-full h-full top-0 left-0 bg-slate-200 bg-opacity-50 flex items-center justify-center" style={{zIndex:'1'}}>
+        <div className="w-[600px] h-[500px] bg-white rounded-lg border-2 border-gray-400 p-8 flex flex-col gap-4 relative">
+          <button
+            onClick={toggleEdit}
+            className="absolute top-3 right-3 flex items-center mr-2 text-lg px-3 py-2 hover:bg-gray-200 rounded-full cursor-pointer"
+          >
+            ✖
+          </button>
+          <h2 className="font-bold text-xl">Edit Tweet</h2>
+          <hr />
+            <form onSubmit={handleEdit}>
+              <textarea
+                onChange={(e) => setTweetText(e.target.value)}
+                value={tweetText}
+                type="text"
+                placeholder="What's happening"
+                maxLength={300}
+                className="bg-slate-200 rounded-lg w-full p-2"
+              ></textarea>
+              <label htmlFor="media1" className="cursor-pointer mr-4">
+                <PermMediaSharpIcon fontSize="small"/>
+              </label>
+              <input
+                id='media1'
+                type="file"
+                style={{ display: 'none' }}
+                className="display-none bg-transparent border border-slate-500 rounded p-2"
+                accept="image/*, video/*"
+                onChange={handleFileChange}
+              />
+              {msg !=='' && <div className="m-2">{msg}</div>}
+              <button type='submit' className="ml-3 px-4 py-1 text-base text-blue-600 font-semibold rounded-full border border-blue-200 hover:text-white hover:bg-blue-600 hover:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2">Save</button>
+            </form>
+            <div>
+              {selectedImage && (<div className="flex justify-center m-2">
+                <img src={selectedImage} alt="Selected" style={{ maxWidth: '100%', maxHeight: '200px' }} />
+              </div>)}
+              {selectedVideo && (
+                <div className="m-2">
+                  <video controls width="100%" height="auto">
+                    <source src={selectedVideo} type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+                </div>
+              )}
+            </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 };
 

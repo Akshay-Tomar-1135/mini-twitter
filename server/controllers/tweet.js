@@ -3,7 +3,7 @@ import { handleError } from "../error.js";
 import User from "../models/User.js";
 
 export const createTweet = async (req, res, next) => {
-  console.log(req.body);
+  // console.log(req.body);
   const newTweet = new Tweet({
     userId: req.body.userId,
     description: req.body.description || '',
@@ -21,16 +21,37 @@ export const createTweet = async (req, res, next) => {
 export const deleteTweet = async (req, res, next) => {
   try {
     const tweet = await Tweet.findById(req.params.id);
-    if (tweet.userId === req.body.id) {
+    // if (tweet.userId === req.body.id) {
       await tweet.deleteOne();
       res.status(200).json("tweet has been deleted");
-    } else {
-      handleError(500, err);
-    }
+    // } else {
+    //   handleError(500, err);
+    // }
   } catch (err) {
     handleError(500, err);
   }
 };
+
+export const editTweet = async (req, res, next) =>{
+  // const newTweet = {
+  //   userId: req.body.userId,
+  //   description: req.body.description || '',
+  //   imageUrl: req.body.type==='image'?req.body.url:'',
+  //   videoUrl: req.body.type==='video'?req.body.url:''
+  // };
+  const tweetId = req.params.id;
+  try {
+    const tweet = Tweet.findById(tweetId);
+    tweet['description'] = req.body.description || '';
+    tweet['imageUrl'] = req.body.type==='image'?req.body.url:'';
+    tweet['videoUrl'] = req.body.type==='video'?req.body.url:'';
+    // return res.status(200).json({msg:'hi'});
+    await tweet.save();
+    res.status(200).json(savedTweet);
+  } catch (err) {
+    handleError(500, err);
+  }
+}
 
 export const likeOrDislike = async (req, res, next) => {
   try {

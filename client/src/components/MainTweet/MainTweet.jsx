@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import TimelineTweet from "../TimelineTweet/TimelineTweet";
 
 import { useSelector } from "react-redux";
@@ -6,9 +6,7 @@ import axios from "axios";
 import {
   ref,
   uploadBytes,
-  getDownloadURL,
-  listAll,
-  list,
+  getDownloadURL
 } from "firebase/storage";
 import { storage } from "../../firebase";
 import PermMediaSharpIcon from '@mui/icons-material/PermMediaSharp';
@@ -54,28 +52,9 @@ const MainTweet = () => {
     }
   };
 
-  
-  const uploadFile = () => {
-    if (!fileType) return;
-    const fileRef = ref(storage, `${fileType}/${currentUser._id + new Date().toString()}`);
-    uploadBytes(fileRef, fileType=='image'?image:video).then((snapshot) => {
-      getDownloadURL(snapshot.ref).then((url) => {
-        // console.log('image uploaded, url: ', url);
-        setFileURL(url);
-      });
-    });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if(!tweetText && !image && !video){
-      console.log('nothing selected');
-      return;
-    } 
-    try {
-      uploadFile();
-      console.log('file url',fileURL);
-      const submitTweet = axios.post("/tweets", {
+  useEffect(()=>{
+    const handle = async ()=>{
+      const submitTweet = await axios.post("https://twitter-backend-jd7u.onrender.com/api/tweets", {
         userId: currentUser._id,
         description: tweetText,
         url: fileURL,
@@ -83,8 +62,47 @@ const MainTweet = () => {
       }, {
         withCredentials: true,
       });
-      console.log('after file url', fileURL);
-      // window.location.reload(false);
+      // console.log('after file url', fileURL);
+      window.location.reload(false);
+    }
+    if((fileType!=='' && fileURL!=='') || fileType===''){
+      // console.log('file url', fileURL);
+      handle();
+    }
+  }, [fileURL]);
+
+  const uploadFile = async () => {
+    if (!fileType) return;
+    const fileRef = ref(storage, `${fileType}/${currentUser._id + new Date().toString()}`);
+    await uploadBytes(fileRef, fileType=='image'?image:video).then((snapshot) => {
+      getDownloadURL(snapshot.ref).then((url) => {
+        console.log('image uploaded, url: ', url);
+        setFileURL(url);
+      });
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if(!tweetText && !image && !video){
+      console.log('nothing selected');
+      return;
+    } 
+    try {
+      await uploadFile();
+      if(fileType===''){
+        // console.log('file url',fileURL);
+        const submitTweet = await axios.post("https://twitter-backend-jd7u.onrender.com/api/tweets", {
+          userId: currentUser._id,
+          description: tweetText,
+          url: fileURL,
+          type: fileType,
+        }, {
+          withCredentials: true,
+        });
+        // console.log('after file url', fileURL);
+        window.location.reload(false);
+      }
     } catch (err) {
       console.log(err);
     }
@@ -104,7 +122,6 @@ const MainTweet = () => {
           maxLength={300}
           className="bg-slate-200 rounded-lg w-full p-2"
         ></textarea>
-        {/* <div className="flex-inline" style={{maxWidth:'60%', border:'1px solid'}}> */}
 
         <label htmlFor="media" className="cursor-pointer mr-4">
           <PermMediaSharpIcon fontSize="small"/>
@@ -118,7 +135,6 @@ const MainTweet = () => {
           onChange={handleFileChange}
         />
           {msg !=='' && <div className="m-2">{msg}</div>}
-          {/* </div> */}
           
         <button
           onClick={handleSubmit}
