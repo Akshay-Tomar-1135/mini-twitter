@@ -42,7 +42,7 @@ const Tweet = ({ tweet, setData }) => {
   const handleDelete = async () => {
     // Implement your delete logic here
     try{
-      const response = await axios.delete(`http://localhost:8000/api/tweets/${tweet._id}`, {
+      const response = await axios.delete(`https://twitter-backend-jd7u.onrender.com/api/tweets/${tweet._id}`, {
         withCredentials:true
       });
     } catch(err){
@@ -56,7 +56,7 @@ const Tweet = ({ tweet, setData }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const findUser = await axios.get(`http://localhost:8000/api/users/find/${tweet.userId}`);
+        const findUser = await axios.get(`https://twitter-backend-jd7u.onrender.com/api/users/find/${tweet.userId}`);
 
         setUserData(findUser.data);
       } catch (err) {
@@ -79,18 +79,18 @@ const Tweet = ({ tweet, setData }) => {
     e.preventDefault();
 
     try {
-      const like = await axios.put(`http://localhost:8000/api/tweets/${tweet._id}/like`, {
+      const like = await axios.put(`https://twitter-backend-jd7u.onrender.com/api/tweets/${tweet._id}/like`, {
         id: currentUser._id,
       });
 
       if (location.includes("profile")) {
-        const newData = await axios.get(`http://localhost:8000/api/tweets/user/all/${id}`);
+        const newData = await axios.get(`https://twitter-backend-jd7u.onrender.com/api/tweets/user/all/${id}`);
         setData(newData.data);
       } else if (location.includes("explore")) {
-        const newData = await axios.get(`http://localhost:8000/api/tweets/explore`);
+        const newData = await axios.get(`https://twitter-backend-jd7u.onrender.com/api/tweets/explore`);
         setData(newData.data);
       } else {
-        const newData = await axios.get(`http://localhost:8000/api/tweets/timeline/${currentUser._id}`);
+        const newData = await axios.get(`https://twitter-backend-jd7u.onrender.com/api/tweets/timeline/${currentUser._id}`);
         setData(newData.data);
       }
     } catch (err) {

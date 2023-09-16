@@ -10,7 +10,7 @@ const UserPlaceholder = ({ setUserData, userData }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const userProfile = await axios.get(`http://localhost:8000/api/users/find/${id}`);
+        const userProfile = await axios.get(`https://twitter-backend-jd7u.onrender.com/api/users/find/${id}`);
         setUserData(userProfile.data);
       } catch (e) {
         console.log(e);

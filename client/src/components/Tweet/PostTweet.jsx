@@ -66,7 +66,7 @@ useEffect(()=>{
         // }
 
         if(tweetId===''){
-            await axios.post("http://localhost:8000/api/tweets", {
+            await axios.post("https://twitter-backend-jd7u.onrender.com/api/tweets", {
                 userId: currentUser._id,
                 description: tweetText,
                 url: fileURL===''?furl:fileURL,
@@ -85,7 +85,7 @@ useEffect(()=>{
         }
         else{
             console.log('!going to update');
-            await axios.put(`http://localhost:8000/api/tweets/${tweetId}`, {
+            await axios.put(`https://twitter-backend-jd7u.onrender.com/api/tweets/${tweetId}`, {
                 userId: currentUser._id,
                 description: tweetText,
                 url: fileURL===''?furl:fileURL,
