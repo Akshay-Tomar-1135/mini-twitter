@@ -1,7 +1,6 @@
 import express from "express";
 import { verifyToken } from "../verifyToken.js";
 import User from "../models/User.js";
-import Image from "../models/Image.js";
 import multer from "multer";
 
 const router = express.Router();
