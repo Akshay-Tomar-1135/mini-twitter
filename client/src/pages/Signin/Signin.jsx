@@ -18,7 +18,7 @@ const Signin = () => {
     e.preventDefault();
     dispatch(loginStart());
     try {
-      const res = await axios.post("https://twitter-backend-jd7u.onrender.com/api/auth/signin", { username, password }, {
+      const res = await axios.post("http://localhost:8000/api/auth/signin", { username, password }, {
         withCredentials: true,
       });
       dispatch(loginSuccess(res.data));
@@ -33,7 +33,7 @@ const Signin = () => {
     dispatch(loginStart());
 
     try {
-      const res = await axios.post("https://twitter-backend-jd7u.onrender.com/api/auth/signup", {
+      const res = await axios.post("http://localhost:8000/api/auth/signup", {
         username,
         email,
         password,

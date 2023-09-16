@@ -16,6 +16,7 @@ import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import PermMediaSharpIcon from '@mui/icons-material/PermMediaSharp';
+import PostTweet from "./PostTweet";
 
 const Tweet = ({ tweet, setData }) => {
   const { currentUser } = useSelector((state) => state.user);
@@ -28,14 +29,6 @@ const Tweet = ({ tweet, setData }) => {
   const [profileImage, setprofileImage] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
-  const [tweetText, setTweetText] = useState(tweet.description);
-  const [image, setImage] = useState(null);
-  const [video, setVideo] = useState(null);
-  const [fileURL, setFileURL] = useState('');
-  const [fileType, setFileType] = useState('');
-  const [msg, setmsg] = useState('');
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [selectedVideo, setSelectedVideo] = useState(null);
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
@@ -46,101 +39,16 @@ const Tweet = ({ tweet, setData }) => {
     setIsEdit(!isEdit);
   }
 
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        if (file.type.startsWith('image/')) {
-          setSelectedImage(reader.result);
-          setImage(file);
-          setFileType('image');
-          // setmsg(file.name);
-          setVideo(null);
-          setSelectedVideo(null);
-        } else if (file.type.startsWith('video/')) {
-          setSelectedVideo(reader.result);
-          setVideo(file);
-          setFileType('video');
-          // setmsg(file.name);
-          setImage(null);
-          setSelectedImage(null);
-        } else {
-          setmsg('unsupported file type');
-          event.target = null;
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  useEffect(()=>{
-    const handle = async ()=>{
-      const submitTweet = await axios.post("/tweets", {
-        userId: currentUser._id,
-        description: tweetText,
-        url: fileURL,
-        type: fileType,
-      }, {
-        withCredentials: true,
-      });
-      // console.log('after file url', fileURL);
-      // window.location.reload(false);
-    }
-    if((fileType!=='' && fileURL!=='') || fileType===''){
-      // console.log('file url', fileURL);
-      handle();
-    }
-  }, [fileURL]);
-
-  const uploadFile = async () => {
-    if (!fileType) return;
-    const fileRef = ref(storage, `${fileType}/${currentUser._id + new Date().toString()}`);
-    await uploadBytes(fileRef, fileType=='image'?image:video).then((snapshot) => {
-      getDownloadURL(snapshot.ref).then((url) => {
-        console.log('image uploaded, url: ', url);
-        setFileURL(url);
-      });
-    });
-  };
-
-  const handleEdit = async (e) => {
-    e.preventDefault();
-    if(!tweetText && !image && !video){
-      console.log('nothing selected');
-      return;
-    } 
-    try {
-      await uploadFile();
-      if(fileType===''){
-        // console.log('file url',fileURL);
-        const submitTweet = await axios.post("https://twitter-backend-jd7u.onrender.com/api/tweets", {
-          userId: currentUser._id,
-          description: tweetText,
-          url: fileURL,
-          type: fileType,
-        }, {
-          withCredentials: true,
-        });
-        // console.log('after file url', fileURL);
-        // window.location.reload(false);
-      }
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
   const handleDelete = async () => {
     // Implement your delete logic here
     try{
-      const response = await axios.delete(`https://twitter-backend-jd7u.onrender.com/api/tweets/${tweet._id}`, {
+      const response = await axios.delete(`http://localhost:8000/api/tweets/${tweet._id}`, {
         withCredentials:true
       });
-      // window.location.reload(false)
     } catch(err){
       console.log(err);
     }
+    window.location.reload(false)
     // Close the dropdown if needed: setIsDropdownOpen(false);
   };
 
@@ -148,7 +56,7 @@ const Tweet = ({ tweet, setData }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const findUser = await axios.get(`https://twitter-backend-jd7u.onrender.com/api/users/find/${tweet.userId}`);
+        const findUser = await axios.get(`http://localhost:8000/api/users/find/${tweet.userId}`);
 
         setUserData(findUser.data);
       } catch (err) {
@@ -171,18 +79,18 @@ const Tweet = ({ tweet, setData }) => {
     e.preventDefault();
 
     try {
-      const like = await axios.put(`https://twitter-backend-jd7u.onrender.com/api/tweets/${tweet._id}/like`, {
+      const like = await axios.put(`http://localhost:8000/api/tweets/${tweet._id}/like`, {
         id: currentUser._id,
       });
 
       if (location.includes("profile")) {
-        const newData = await axios.get(`https://twitter-backend-jd7u.onrender.com/api/tweets/user/all/${id}`);
+        const newData = await axios.get(`http://localhost:8000/api/tweets/user/all/${id}`);
         setData(newData.data);
       } else if (location.includes("explore")) {
-        const newData = await axios.get(`https://twitter-backend-jd7u.onrender.com/api/tweets/explore`);
+        const newData = await axios.get(`http://localhost:8000/api/tweets/explore`);
         setData(newData.data);
       } else {
-        const newData = await axios.get(`https://twitter-backend-jd7u.onrender.com/api/tweets/timeline/${currentUser._id}`);
+        const newData = await axios.get(`http://localhost:8000/api/tweets/timeline/${currentUser._id}`);
         setData(newData.data);
       }
     } catch (err) {
@@ -297,7 +205,12 @@ const Tweet = ({ tweet, setData }) => {
           </button>
           <h2 className="font-bold text-xl">Edit Tweet</h2>
           <hr />
-            <form onSubmit={handleEdit}>
+            <PostTweet 
+            description={tweet.description} 
+            tweetId={tweet._id} 
+            furl={tweet.imageUrl===''?tweet.videoUrl:tweet.imageUrl}
+            ftype={tweet.imageUrl===''?(tweet.videoUrl===''?'':'video'):'image'}/>
+            {/* <form onSubmit={handleEdit}>
               <textarea
                 onChange={(e) => setTweetText(e.target.value)}
                 value={tweetText}
@@ -332,7 +245,7 @@ const Tweet = ({ tweet, setData }) => {
                   </video>
                 </div>
               )}
-            </div>
+            </div> */}
         </div>
       </div>
     )}

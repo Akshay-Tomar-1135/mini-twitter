@@ -16,13 +16,13 @@ const router = express.Router();
 const upload = multer({storage: multer.memoryStorage()});
 
 // Create a Tweet
-router.post("/", verifyToken, createTweet);
+router.post("/", createTweet);
 
 // Delete a Tweet
-router.delete("/:id", verifyToken, deleteTweet);
+router.delete("/:id", deleteTweet);
 
 // Edit a Tweet
-router.put("/:id", verifyToken, editTweet);
+router.put("/:id", editTweet);
 
 // Like or Dislike a Tweet
 router.put("/:id/like", likeOrDislike);

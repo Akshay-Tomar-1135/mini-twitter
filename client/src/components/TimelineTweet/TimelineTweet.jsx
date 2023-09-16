@@ -13,8 +13,9 @@ const TimelineTweet = () => {
     const fetchData = async () => {
       try {
         const timelineTweets = await axios.get(
-          `https://twitter-backend-jd7u.onrender.com/api/tweets/timeline/${currentUser._id}`
+          `http://localhost:8000/api/tweets/timeline/${currentUser._id}`
         );
+        console.log(timelineTweets.data);
 
         setTimeLine(timelineTweets.data);
       } catch (err) {
@@ -25,7 +26,7 @@ const TimelineTweet = () => {
     fetchData();
   }, [currentUser._id]);
 
-  console.log("Timeline", timeLine);
+  // console.log("Timeline", timeLine);
   return (
     <div className="mt-6 divide-y divide-gray-300 divide-dashed hover:divide-solid" >
       {timeLine &&

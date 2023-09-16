@@ -63,10 +63,10 @@ const LeftSidebar = () => {
                 src={image}
                 alt="Profile Picture"
                 className="w-12 h-12 rounded-full mr-0 border-2 border-slate-800 border-solid"
-                style={{objectFit:'cover'}} 
+                style={{objectFit:'cover'}}
               />
             ):(
-              <div className="w-12 h-12 bg-blue-500 border-2 border-slate-800 border-solid rounded-full flex items-center justify-center text-white font-bold text-lg mr-0" style={{fontSize:'10px'}}>
+              <div className="w-12 h-12 bg-blue-500 border-2 text-lg border-slate-800 border-solid rounded-full flex items-center justify-center text-white font-bold text-lg mr-0" >
                 {getFirstCharacterUpperCase(currentUser.username)}
               </div>
             )}

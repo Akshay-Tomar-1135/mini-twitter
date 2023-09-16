@@ -5,7 +5,6 @@ import cookieParser from "cookie-parser";
 import userRoutes from "./routes/users.js";
 import authRoutes from "./routes/auths.js";
 import tweetRoutes from "./routes/tweets.js";
-import imageRoutes from "./routes/image.js";
 
 import cors from 'cors';
 
@@ -25,6 +24,7 @@ const connect = () => {
 };
 var corsOptions = {
   origin: 'https://twitter-clone-1135.netlify.app',
+  // origin:'http://localhost:3000',
   credentials: true,
   optionsSuccessStatus: 200 // For legacy browser support
 }
@@ -36,7 +36,6 @@ app.use(express.json());
 app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/tweets", tweetRoutes);
-app.use("/api/image", imageRoutes);
 
 app.listen(8000, () => {
   connect();

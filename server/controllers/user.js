@@ -2,12 +2,13 @@ import { handleError } from "../error.js";
 import User from "../models/User.js";
 import Tweet from "../models/Tweet.js";
 
+
 export const getUser = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.id);
     res.status(200).json(user);
   } catch (err) {
-    next(err);
+    res.status(500).json(err);
   }
 };
 export const update = async (req, res, next) => {
@@ -30,18 +31,47 @@ export const update = async (req, res, next) => {
     return next(createError(403, "You can update only your account"));
   }
 };
-export const deleteUser = async (req, res, next) => {
-  if (req.params.id === req.user.id) {
-    try {
-      await User.findByIdAndDelete(req.params.id);
-      await Tweet.remove({ userId: req.params.id });
+export const deleteUser = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
-      res.status(200).json("User delete");
-    } catch (err) {
-      next(err);
+  try {
+    const { userId } = req.params;
+    const userToDelete = await User.findById(userId);
+
+    if (!userToDelete) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(404).json({ message: 'User not found.' });
     }
-  } else {
-    return next(handleError(403, "You can only update your own account"));
+
+    // Delete all tweets with userId matching the deleted user.
+    await Tweet.deleteMany({ userId: userToDelete._id }, { session });
+
+    await userToDelete.remove();
+
+    await User.updateMany(
+      { _id: { $in: userToDelete.followers } },
+      { $pull: { followers: userId } },
+      { session }
+    );
+
+    await User.updateMany(
+      { _id: { $in: userToDelete.following } },
+      { $pull: { following: userId } },
+      { session }
+    );
+
+    await session.commitTransaction();
+    session.endSession();
+
+    return res.status(200).json({ message: 'User and associated tweets deleted successfully.' });
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+
+    console.error(error);
+    return res.status(500).json({ message: 'Error deleting user and associated tweets.' });
   }
 };
 

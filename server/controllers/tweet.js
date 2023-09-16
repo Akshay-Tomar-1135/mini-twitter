@@ -15,6 +15,7 @@ export const createTweet = async (req, res, next) => {
     const savedTweet = await newTweet.save();
     res.status(200).json(savedTweet);
   } catch (err) {
+    res.status(500).json(err);
     handleError(500, err);
   }
 };
@@ -32,26 +33,32 @@ export const deleteTweet = async (req, res, next) => {
   }
 };
 
-export const editTweet = async (req, res, next) =>{
-  // const newTweet = {
-  //   userId: req.body.userId,
-  //   description: req.body.description || '',
-  //   imageUrl: req.body.type==='image'?req.body.url:'',
-  //   videoUrl: req.body.type==='video'?req.body.url:''
-  // };
+export const editTweet = async (req, res) => {
   const tweetId = req.params.id;
+
   try {
-    const tweet = Tweet.findById(tweetId);
-    tweet['description'] = req.body.description || '';
-    tweet['imageUrl'] = req.body.type==='image'?req.body.url:'';
-    tweet['videoUrl'] = req.body.type==='video'?req.body.url:'';
-    // return res.status(200).json({msg:'hi'});
-    await tweet.save();
-    res.status(200).json(savedTweet);
+    // Find the tweet by its ID
+    const tweet = await Tweet.findById(tweetId);
+
+    if (!tweet) {
+      return res.status(404).json({ message: 'Tweet not found.' });
+    }
+
+    // Update tweet properties based on request body
+    tweet.description = req.body.description || tweet.description;
+    tweet.imageUrl = req.body.type === 'image' ? req.body.url : '';
+    tweet.videoUrl = req.body.type === 'video' ? req.body.url : '';
+
+    // Save the updated tweet
+    const updatedTweet = await tweet.save();
+
+    res.status(200).json(updatedTweet);
   } catch (err) {
-    handleError(500, err);
+    console.error(err);
+    res.status(500).json({ message: 'Error updating tweet.' });
   }
-}
+};
+
 
 export const likeOrDislike = async (req, res, next) => {
   try {
@@ -95,14 +102,17 @@ export const getUserTweets = async (req, res, next) => {
     handleError(500, err);
   }
 };
-export const getExploreTweets = async (req, res, next) => {
-  try {
-    const getExploreTweets = await Tweet.find({
-      likes: { $exists: true },
-    }).sort({ likes: -1 });
 
-    res.status(200).json(getExploreTweets);
+export const getExploreTweets = async (req, res) => {
+  try {
+    const exploreTweets = await Tweet.find({ likes: { $exists: true } }).sort({
+      likes: -1,
+    });
+
+    res.status(200).json(exploreTweets);
   } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error fetching explore tweets.' });
     handleError(500, err);
   }
 };
