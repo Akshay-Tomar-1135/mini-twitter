@@ -1,4 +1,3 @@
-
 ![logo](https://github.com/Akshay-Tomar-1135/mini-twitter/assets/75598614/87a37867-5751-4840-b492-03b995ac19c4)
 # Mini-twitter Clone
 
@@ -75,6 +74,9 @@ npm start
 - Follow and unfollow other users to customize your timeline.
 - Like and unlike tweets that you find interesting.
 - Edit your profile information and set a profile picture.
+## Demo Link
+
+https://twitter-clone-1135.netlify.app
 ## Screenshots
 
 ### Login and SignUp Page
